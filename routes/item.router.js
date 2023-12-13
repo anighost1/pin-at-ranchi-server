@@ -5,8 +5,10 @@ const Item = require('../models/item.model')
 
 const router = express.Router()
 
-router.get('/', (req, res) => {
-    res.send('Item Router')
+
+router.get('/', async (req, res) => {
+    const itemData = await Item.find()
+    res.json(itemData)
 })
 
 router.post('/', async (req, res) => {
@@ -33,5 +35,6 @@ router.post('/', async (req, res) => {
         }
     }
 })
+
 
 module.exports = router
