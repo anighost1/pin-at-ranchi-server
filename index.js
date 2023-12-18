@@ -1,7 +1,9 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const connectDb = require('./config/dbConfig')
+
 const itemRouter = require('./routes/item.router')
+const categoryRouter = require('./routes/category.router')
 
 const app = express()
 app.use(express.json())
@@ -15,9 +17,10 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api/item', itemRouter)
+app.use('/api/category', categoryRouter)
 
 
-db.on('open', () => {
+db.once('open', () => {
     console.log('DB connection successful')
     app.listen(port, () => {
         console.log(`Pin at Ranchi server is listening on port ${port}`)

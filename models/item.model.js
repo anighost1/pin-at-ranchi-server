@@ -7,7 +7,8 @@ const itemSchema = new Schema({
         required: true
     },
     category: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref:'Category',
         required: true
     },
     longitude: {
@@ -23,12 +24,6 @@ const itemSchema = new Schema({
     contact: {
         type: String
     },
-    image: {
-        type: String
-    },
-    imageArray: {
-        type: Array
-    },
     addressLine1: {
         type: String,
         required: true
@@ -43,6 +38,10 @@ const itemSchema = new Schema({
     state: {
         type: String,
         required: true
+    },
+    status: {
+        type: Boolean,
+        default: true
     },
     pin: {
         type: Number,

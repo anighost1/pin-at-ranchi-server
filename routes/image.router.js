@@ -1,13 +1,13 @@
 const express = require('express')
 
-const Item = require('../models/item.model')
+const Image = require('../models/image.model')
 
 const router = express.Router()
 
 //find all data
 router.get('/', async (req, res) => {
     try {
-        const itemData = await Item.find().populate('category');
+        const itemData = await Image.find();
         res.json(itemData);
     } catch (error) {
         console.error(error);
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     const itemId = req.params.id
     try {
-        const itemData = await Item.findById(itemId);
+        const itemData = await Image.findById(itemId);
         res.json(itemData);
     } catch (error) {
         console.error(error);
@@ -33,11 +33,11 @@ router.get('/:id', async (req, res) => {
 
 //insert data
 router.post('/', async (req, res) => {
-    const newItem = new Item(req.body)
+    const newItem = new Image(req.body)
     try {
         await newItem.save()
         res.status(200).json({
-            message: 'Item successfully inserted'
+            message: 'Image successfully inserted'
         })
     } catch (e) {
         if (e.name === 'ValidationError') {
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
         } else {
             console.error(e);
             res.status(500).json({
-                message: 'Item insertion unsuccessful'
+                message: 'Image insertion unsuccessful'
             });
         }
     }
