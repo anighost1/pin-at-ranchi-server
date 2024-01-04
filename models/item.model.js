@@ -21,9 +21,6 @@ const itemSchema = new Schema({
         min: -90,
         max: 90
     },
-    contact: {
-        type: String
-    },
     addressLine1: {
         type: String,
         required: true
@@ -55,6 +52,24 @@ const itemSchema = new Schema({
     },
     map: {
         type: String
+    },
+    mobile: {
+        type: String,
+        validate: {
+            validator: function (v) {
+                return /^\d{10}$/.test(v);
+            },
+            message: (props) => `${props.value} is not a valid 10-digit mobile number!`,
+        },
+    },
+    email: {
+        type: String,
+        validate: {
+            validator: function (v) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+            },
+            message: (props) => `${props.value} is not a valid email address!`,
+        },
     },
 });
 

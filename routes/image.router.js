@@ -1,4 +1,6 @@
 const express = require('express')
+const upload = require('../config/imageUploadConfig')
+const fs = require('fs')
 
 const Image = require('../models/image.model')
 
@@ -6,38 +8,80 @@ const router = express.Router()
 
 //find all data
 router.get('/', async (req, res) => {
+    let imgArray = []
     try {
-        const itemData = await Image.find();
-        res.json(itemData);
+        const imgData = await Image.find();
+        imgData.forEach(img => {
+            const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
+            const base64 = Buffer.from(buffer).toString('base64')
+            imgArray.push({
+                ...img._doc,
+                image:`data:${img.mimetype};base64,${base64}`
+            })
+        });
+        res.json(imgArray)
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            message: 'Error retrieving items'
+            message: 'Error retrieving Images'
+        });
+    }
+    fs.readFile(`${imgData.destination}/${imgData.filename}`, (err, file) => {
+        if (err) throw err
+        res.send(file)
+    })
+})
+
+//find data by Item id
+router.get('/by-item/:id', async (req, res) => {
+    const itemId = req.params.id
+    try {
+        const imgData = await Image.findOne({itemId});
+        const buffer = fs.readFileSync(`${imgData.destination}/${imgData.filename}`)
+        const base64 = Buffer.from(buffer).toString('base64')
+        res.json({
+            ...imgData._doc,
+            image:`data:${imgData.mimetype};base64,${base64}`
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Error retrieving image'
         });
     }
 })
 
 //find data by id
 router.get('/:id', async (req, res) => {
-    const itemId = req.params.id
+    const imgId = req.params.id
     try {
-        const itemData = await Image.findById(itemId);
-        res.json(itemData);
+        const imgData = await Image.findById(imgId);
+        const buffer = fs.readFileSync(`${imgData.destination}/${imgData.filename}`)
+        const base64 = Buffer.from(buffer).toString('base64')
+        res.json({
+            ...imgData._doc,
+            image:`data:${imgData.mimetype};base64,${base64}`
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            message: 'Error retrieving items'
+            message: 'Error retrieving image'
         });
     }
 })
 
 //insert data
-router.post('/', async (req, res) => {
-    const newItem = new Image(req.body)
+router.post('/', upload.single('itemImage'), async (req, res) => {
+    const imageData = req.file
+    const dataToWrite = {
+        ...imageData,
+        ...req.body
+    }
+    const newImg = new Image(dataToWrite)
     try {
-        await newItem.save()
+        await newImg.save()
         res.status(200).json({
-            message: 'Image successfully inserted'
+            message: 'Image successfully uploaded'
         })
     } catch (e) {
         if (e.name === 'ValidationError') {
@@ -49,7 +93,7 @@ router.post('/', async (req, res) => {
         } else {
             console.error(e);
             res.status(500).json({
-                message: 'Image insertion unsuccessful'
+                message: 'Image upload unsuccessful'
             });
         }
     }

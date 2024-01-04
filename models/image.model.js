@@ -7,9 +7,24 @@ const imageSchema = new Schema({
         ref:'Item',
         required: true
     },
-    path: {
+    destination: {
         type: String,
         required: true
+    },
+    filename: {
+        type: String,
+        required: true
+    },
+    mimetype: {
+        type: String,
+        required: true
+    },
+    alt: {
+        type: String,
+        required: true
+    },
+    size: {
+        type: Number,
     },
     status: {
         type: Boolean,

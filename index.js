@@ -1,12 +1,15 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const connectDb = require('./config/dbConfig')
+const cors = require('cors')
 
 const itemRouter = require('./routes/item.router')
 const categoryRouter = require('./routes/category.router')
+const imageRouter = require('./routes/image.router')
 
 const app = express()
 app.use(express.json())
+app.use(cors())
 const port = process.env.PORT || 6969
 
 connectDb()
@@ -18,6 +21,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/item', itemRouter)
 app.use('/api/category', categoryRouter)
+app.use('/api/image', imageRouter)
 
 
 db.once('open', () => {
