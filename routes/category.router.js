@@ -5,6 +5,7 @@ const Category = require('../models/category.model')
 const router = express.Router()
 
 
+//find all data
 router.get('/', async (req, res) => {
     const page = parseInt(req.query.page)
     const limit = parseInt(req.query.limit)
@@ -14,6 +15,7 @@ router.get('/', async (req, res) => {
     try {
         const itemData = await Category.find().skip(startIndex).limit(limit);
         const count = await Category.countDocuments();
+        const totalPage = Math.ceil(count / limit)
         dataToSend.data = itemData
         if (endIndex < count) {
             dataToSend.next = {
@@ -27,6 +29,9 @@ router.get('/', async (req, res) => {
                 limit: limit
             }
         }
+        dataToSend.currentPage = page
+        dataToSend.currentLimit = limit
+        dataToSend.totalPage = totalPage
         res.json(dataToSend);
     } catch (error) {
         console.error(error);
@@ -36,20 +41,6 @@ router.get('/', async (req, res) => {
     }
 })
 
-
-
-//find all data
-// router.get('/', async (req, res) => {
-//     try {
-//         const itemData = await Category.find();
-//         res.json(itemData);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({
-//             message: 'Error retrieving category'
-//         });
-//     }
-// })
 
 //find data by id
 router.get('/:id', async (req, res) => {

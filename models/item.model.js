@@ -71,6 +71,13 @@ const itemSchema = new Schema({
             message: (props) => `${props.value} is not a valid email address!`,
         },
     },
+},{ toJSON: { virtuals: true } });
+
+itemSchema.virtual('images', {
+    ref: 'Image', // Model to reference
+    localField: '_id', // Field from Item model
+    foreignField: 'itemId', // Field from Image model
+    justOne: false, // Set to true if each item has only one image
 });
 
 const Item = mongoose.model('Item', itemSchema)

@@ -1,14 +1,39 @@
 const express = require('express')
+const fs = require('fs')
 
 const Item = require('../models/item.model')
+const Image = require('../models/image.model')
 
 const router = express.Router()
 
-//find all data
+
 router.get('/', async (req, res) => {
+    const page = parseInt(req.query.page)
+    const limit = parseInt(req.query.limit)
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    let dataToSend = {}
     try {
-        const itemData = await Item.find().populate('category');
-        res.json(itemData);
+        const itemData = await Item.find().populate('category').skip(startIndex).limit(limit);
+        const count = await Item.countDocuments();
+        const totalPage = Math.ceil(count / limit)
+        dataToSend.data = itemData
+        if (endIndex < count) {
+            dataToSend.next = {
+                page: page + 1,
+                limit: limit
+            }
+        }
+        if (startIndex > 0) {
+            dataToSend.prev = {
+                page: page - 1,
+                limit: limit
+            }
+        }
+        dataToSend.currentPage = page
+        dataToSend.currentLimit = limit
+        dataToSend.totalPage = totalPage
+        res.json(dataToSend);
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -16,6 +41,55 @@ router.get('/', async (req, res) => {
         });
     }
 })
+
+//data with its images
+router.get('/with-image', async (req, res) => {
+    const page = parseInt(req.query.page)
+    const limit = parseInt(req.query.limit)
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    let dataToSend = {}
+    try {
+        const itemData = await Item.find().populate('category').populate('images').skip(startIndex).limit(limit);
+        const count = await Item.countDocuments();
+        const totalPage = Math.ceil(count / limit)
+        itemData.forEach((item) => {
+            let imgArray = []
+            item?.images.forEach(img => {
+                const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
+                const base64 = Buffer.from(buffer).toString('base64')
+                imgArray.push({
+                    ...img._doc,
+                    image: `data:${img.mimetype};base64,${base64}`
+                })
+            });
+            item.images = imgArray
+        })
+        dataToSend.data = itemData
+        if (endIndex < count) {
+            dataToSend.next = {
+                page: page + 1,
+                limit: limit
+            }
+        }
+        if (startIndex > 0) {
+            dataToSend.prev = {
+                page: page - 1,
+                limit: limit
+            }
+        }
+        dataToSend.currentPage = page
+        dataToSend.currentLimit = limit
+        dataToSend.totalPage = totalPage
+        res.json(dataToSend);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Error retrieving items'
+        });
+    }
+})
+
 
 //find data by id
 router.get('/:id', async (req, res) => {
