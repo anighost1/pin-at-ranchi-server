@@ -94,16 +94,16 @@ router.get('/with-image/:id', async (req, res) => {
     const itemId = req.params.id
     try {
         const itemData = await Item.findById(itemId).populate('category').populate('images');
-            let imgArray = []
-            itemData?.images.forEach(img => {
-                const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
-                const base64 = Buffer.from(buffer).toString('base64')
-                imgArray.push({
-                    ...img._doc,
-                    image: `data:${img.mimetype};base64,${base64}`
-                })
-            });
-            itemData.images = imgArray
+        let imgArray = []
+        itemData?.images.forEach(img => {
+            const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
+            const base64 = Buffer.from(buffer).toString('base64')
+            imgArray.push({
+                ...img._doc,
+                image: `data:${img.mimetype};base64,${base64}`
+            })
+        });
+        itemData.images = imgArray
         res.json(itemData);
     } catch (error) {
         console.error(error);
@@ -112,6 +112,7 @@ router.get('/with-image/:id', async (req, res) => {
         });
     }
 })
+
 
 //find data by id
 router.get('/:id', async (req, res) => {
