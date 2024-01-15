@@ -71,6 +71,10 @@ const itemSchema = new Schema({
             message: (props) => `${props.value} is not a valid email address!`,
         },
     },
+    keyword: {
+        type: Array,
+        required: true,
+    },
 },{ toJSON: { virtuals: true } });
 
 itemSchema.virtual('images', {

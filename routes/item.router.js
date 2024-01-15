@@ -152,5 +152,31 @@ router.post('/', async (req, res) => {
     }
 })
 
+//update data
+router.put('/', async (req, res) => {
+    const dataToUpdate = req.body
+    // const _id = dataToUpdate._id
+    try {
+        const oldItem = await Item.findByIdAndUpdate(dataToUpdate._id, dataToUpdate)
+        console.log(oldItem)
+        res.status(200).json({
+            message: 'Item successfully updated'
+        })
+    } catch (e) {
+        if (e.name === 'ValidationError') {
+            const validationErrors = Object.values(e.errors).map(err => err.message);
+            res.status(400).json({
+                message: 'Validation error',
+                errors: validationErrors
+            });
+        } else {
+            console.error(e);
+            res.status(500).json({
+                message: 'Item updation unsuccessful'
+            });
+        }
+    }
+})
+
 
 module.exports = router

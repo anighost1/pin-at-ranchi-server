@@ -80,5 +80,31 @@ router.post('/', async (req, res) => {
     }
 })
 
+//update data
+router.put('/', async (req, res) => {
+    const dataToUpdate = req.body
+    // const _id = dataToUpdate._id
+    try {
+        const oldIData = await Category.findByIdAndUpdate(dataToUpdate._id, dataToUpdate)
+        console.log(oldIData)
+        res.status(200).json({
+            message: 'Category successfully updated'
+        })
+    } catch (e) {
+        if (e.name === 'ValidationError') {
+            const validationErrors = Object.values(e.errors).map(err => err.message);
+            res.status(400).json({
+                message: 'Validation error',
+                errors: validationErrors
+            });
+        } else {
+            console.error(e);
+            res.status(500).json({
+                message: 'Category updation unsuccessful'
+            });
+        }
+    }
+})
+
 
 module.exports = router
