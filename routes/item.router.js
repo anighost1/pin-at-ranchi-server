@@ -47,10 +47,18 @@ router.get('/with-image', async (req, res) => {
     const limit = parseInt(req.query.limit)
     const startIndex = (page - 1) * limit
     const endIndex = startIndex + limit
+    const searchQuery = req.query.search || '';
     let dataToSend = {}
+    const query = {
+        $or: [
+            { 'name': { $regex: searchQuery, $options: 'i' } },
+            { 'addressLine1': { $regex: searchQuery, $options: 'i' } },
+            { 'addressLine2': { $regex: searchQuery, $options: 'i' } },
+        ]
+    };
     try {
-        const itemData = await Item.find().populate('category').populate('images').skip(startIndex).limit(limit);
-        const count = await Item.countDocuments();
+        const itemData = await Item.find(searchQuery?query:{}).populate('category').populate('images').skip(startIndex).limit(limit);
+        const count = await Item.countDocuments(searchQuery?query:{});
         const totalPage = Math.ceil(count / limit)
         itemData.forEach((item) => {
             let imgArray = []
@@ -158,7 +166,7 @@ router.put('/', async (req, res) => {
     // const _id = dataToUpdate._id
     try {
         const oldItem = await Item.findByIdAndUpdate(dataToUpdate._id, dataToUpdate)
-        console.log(oldItem)
+        // console.log(oldItem)
         res.status(200).json({
             message: 'Item successfully updated'
         })

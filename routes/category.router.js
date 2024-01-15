@@ -83,10 +83,9 @@ router.post('/', async (req, res) => {
 //update data
 router.put('/', async (req, res) => {
     const dataToUpdate = req.body
-    // const _id = dataToUpdate._id
     try {
         const oldIData = await Category.findByIdAndUpdate(dataToUpdate._id, dataToUpdate)
-        console.log(oldIData)
+        // console.log(oldIData)
         res.status(200).json({
             message: 'Category successfully updated'
         })
