@@ -105,5 +105,23 @@ router.put('/', async (req, res) => {
     }
 })
 
+//status change
+router.put('/status', async (req, res) => {
+    const id = req.body.id
+    try {
+        const result = await Category.findById(id)
+        result.status = !result.status
+        result.save()
+        res.status(200).json({
+            message: `Status changed to ${result.status ? 'Active' : 'Inactive'}`
+        })
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({
+            message: 'Status change unsuccessful'
+        });
+    }
+})
+
 
 module.exports = router
