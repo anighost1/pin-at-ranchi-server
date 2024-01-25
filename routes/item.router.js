@@ -1,7 +1,8 @@
-const express = require('express')
-const fs = require('fs')
+import express from 'express'
+import { fs } from 'memfs'
 
-const Item = require('../models/item.model')
+import Item from '../models/item.model.js'
+import imageRetriever from '../service/imageRetriever.js'
 
 const router = express.Router()
 
@@ -75,18 +76,21 @@ router.get('/with-image', async (req, res) => {
         const itemData = await Item.find(searchQuery ? query : { status: true }).populate('category').populate('images').skip(startIndex).limit(limit);
         const count = await Item.countDocuments(searchQuery ? query : {});
         const totalPage = Math.ceil(count / limit)
-        itemData.forEach((item) => {
-            let imgArray = []
-            item?.images.forEach(img => {
-                const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
-                const base64 = Buffer.from(buffer).toString('base64')
-                imgArray.push({
-                    ...img._doc,
-                    image: `data:${img.mimetype};base64,${base64}`
-                })
-            });
-            item.images = imgArray
-        })
+        await Promise.all(
+            itemData.map(async (item) => {
+                let imgArray = []
+                await Promise.all(
+                    item?.images.map(async img => {
+                        if (img.gridfsId) {
+                            await imageRetriever(img, imgArray)
+                        }
+                    })
+                )
+                // fs.unlinkSync('/outputFile');
+                // console.log(imgArray)
+                item.images = imgArray
+            })
+        )
         dataToSend.data = itemData
         if (endIndex < count) {
             dataToSend.next = {
@@ -118,14 +122,21 @@ router.get('/with-image/:id', async (req, res) => {
     try {
         const itemData = await Item.findById(itemId).populate('category').populate('images');
         let imgArray = []
-        itemData?.images.forEach(img => {
-            const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
-            const base64 = Buffer.from(buffer).toString('base64')
-            imgArray.push({
-                ...img._doc,
-                image: `data:${img.mimetype};base64,${base64}`
+        // itemData?.images.forEach(img => {
+        //     const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
+        //     const base64 = Buffer.from(buffer).toString('base64')
+        //     imgArray.push({
+        //         ...img._doc,
+        //         image: `data:${img.mimetype};base64,${base64}`
+        //     })
+        // });
+        await Promise.all(
+            itemData?.images.map(async img => {
+                if (img.gridfsId) {
+                    await imageRetriever(img, imgArray)
+                }
             })
-        });
+        )
         itemData.images = imgArray
         res.json(itemData);
     } catch (error) {
@@ -209,7 +220,7 @@ router.put('/status', async (req, res) => {
         result.status = !result.status
         result.save()
         res.status(200).json({
-            message: `Status changed to ${result.status?'Active':'Inactive'}`
+            message: `Status changed to ${result.status ? 'Active' : 'Inactive'}`
         })
     } catch (e) {
         console.error(e);
@@ -220,4 +231,4 @@ router.put('/status', async (req, res) => {
 })
 
 
-module.exports = router
+export default router

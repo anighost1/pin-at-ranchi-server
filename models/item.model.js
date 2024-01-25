@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const itemSchema = new Schema({
@@ -85,4 +85,4 @@ itemSchema.virtual('images', {
 });
 
 const Item = mongoose.model('Item', itemSchema)
-module.exports = Item
+export default Item

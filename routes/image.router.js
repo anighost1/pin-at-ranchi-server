@@ -1,8 +1,15 @@
-const express = require('express')
-const upload = require('../config/imageUploadConfig')
-const fs = require('fs')
+import express from 'express'
+import upload from '../config/imageUploadConfig.js'
+// import fs from 'fs'
+import { fs } from 'memfs'
+import { Readable } from 'stream'
+import generateUniqueFileName from '../service/randomNameGenerator.js'
+import { gfs } from '../index.js'
 
-const Image = require('../models/image.model')
+import Image from '../models/image.model.js'
+import mongoose from 'mongoose'
+import imageRetriever from '../service/imageRetriever.js'
+
 
 const router = express.Router()
 
@@ -26,10 +33,6 @@ router.get('/', async (req, res) => {
             message: 'Error retrieving Images'
         });
     }
-    // fs.readFile(`${imgData.destination}/${imgData.filename}`, (err, file) => {
-    //     if (err) throw err
-    //     res.send(file)
-    // })
 })
 
 //find all data of specific item id
@@ -38,14 +41,13 @@ router.get('/by-item/all/:id', async (req, res) => {
     let imgArray = []
     try {
         const imgData = await Image.find({ itemId });
-        imgData.forEach(img => {
-            const buffer = fs.readFileSync(`${img.destination}/${img.filename}`)
-            const base64 = Buffer.from(buffer).toString('base64')
-            imgArray.push({
-                ...img._doc,
-                image: `data:${img.mimetype};base64,${base64}`
+        await Promise.all(
+            imgData.map(async (img) => {
+                await imageRetriever(img, imgArray)
             })
-        });
+        );
+        fs.unlinkSync('/outputFile');
+        // console.log(imgArray)
         res.json(imgArray)
     } catch (error) {
         console.error(error);
@@ -53,10 +55,6 @@ router.get('/by-item/all/:id', async (req, res) => {
             message: 'Error retrieving Images'
         });
     }
-    // fs.readFile(`${imgData.destination}/${imgData.filename}`, (err, file) => {
-    //     if (err) throw err
-    //     res.send(file)
-    // })
 })
 
 //find data by Item id
@@ -97,6 +95,8 @@ router.get('/:id', async (req, res) => {
     }
 })
 
+
+
 // //insert data
 // router.post('/', upload.single('itemImage'), async (req, res) => {
 //     const imageData = req.file
@@ -126,9 +126,44 @@ router.get('/:id', async (req, res) => {
 //     }
 // })
 
-//insert multiple data at once
+
+
+// //insert multiple data at once
+// router.post('/', upload.array('itemImage'), async (req, res) => {
+//     const imageData = req.files
+//     if (imageData.length < 1) {
+//         res.status(404).json({
+//             message: 'No Image found'
+//         });
+//         return
+//     }
+//     try {
+//         await Promise.all(
+//             imageData.map(item => new Image({ ...item, ...req.body }).save())
+//         )
+//         res.status(200).json({
+//             message: 'Image(s) successfully uploaded'
+//         })
+//     } catch (e) {
+//         if (e.name === 'ValidationError') {
+//             const validationErrors = Object.values(e.errors).map(err => err.message);
+//             res.status(400).json({
+//                 message: 'Validation error',
+//                 errors: validationErrors
+//             });
+//         } else {
+//             console.error(e);
+//             res.status(500).json({
+//                 message: 'Image upload unsuccessful'
+//             });
+//         }
+//     }
+// })
+
+//insert image data and save the buffer in gridfs
 router.post('/', upload.array('itemImage'), async (req, res) => {
     const imageData = req.files
+    // console.log(imageData)
     if (imageData.length < 1) {
         res.status(404).json({
             message: 'No Image found'
@@ -137,10 +172,25 @@ router.post('/', upload.array('itemImage'), async (req, res) => {
     }
     try {
         await Promise.all(
-            imageData.map(item => new Image({ ...item, ...req.body }).save())
+            imageData.map((item) => {
+                const uploadStream = gfs.openUploadStream(generateUniqueFileName(item.originalname))
+                const readStream = Readable.from(item.buffer)
+                const result = readStream.pipe(uploadStream)
+                uploadStream.once('finish', () => {
+                    console.log(uploadStream.id)
+                    delete item.buffer
+                    console.log(item)
+                    console.log(req.body)
+                    new Image({
+                        gridfsId: uploadStream.id,
+                        ...item,
+                        ...req.body
+                    }).save()
+                })
+            })
         )
         res.status(200).json({
-            message: 'Image(s) successfully uploaded'
+            message: 'Image(s) successfully uploaded',
         })
     } catch (e) {
         if (e.name === 'ValidationError') {
@@ -159,4 +209,4 @@ router.post('/', upload.array('itemImage'), async (req, res) => {
 })
 
 
-module.exports = router
+export default router
