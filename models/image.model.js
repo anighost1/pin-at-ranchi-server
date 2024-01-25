@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const imageSchema = new Schema({
@@ -7,14 +7,18 @@ const imageSchema = new Schema({
         ref:'Item',
         required: true
     },
-    destination: {
-        type: String,
+    gridfsId: {
+        type: mongoose.Types.ObjectId,
         required: true
     },
-    filename: {
-        type: String,
-        required: true
-    },
+    // destination: {
+    //     type: String,
+    //     required: true
+    // },
+    // filename: {
+    //     type: String,
+    //     required: true
+    // },
     mimetype: {
         type: String,
         required: true
@@ -33,4 +37,4 @@ const imageSchema = new Schema({
 });
 
 const Image = mongoose.model('Image', imageSchema)
-module.exports = Image
+export default Image

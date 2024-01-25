@@ -1,11 +1,12 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const connectDb = require('./config/dbConfig')
-const cors = require('cors')
 
-const itemRouter = require('./routes/item.router')
-const categoryRouter = require('./routes/category.router')
-const imageRouter = require('./routes/image.router')
+import express from 'express'
+import mongoose from 'mongoose'
+import connectDb from './config/dbConfig.js'
+import cors from 'cors'
+
+import itemRouter from './routes/item.router.js'
+import categoryRouter from './routes/category.router.js'
+import imageRouter from './routes/image.router.js'
 
 const app = express()
 app.use(express.json())
@@ -23,10 +24,13 @@ app.use('/api/item', itemRouter)
 app.use('/api/category', categoryRouter)
 app.use('/api/image', imageRouter)
 
-
+let gfs;
 db.once('open', () => {
     console.log('DB connection successful')
+    gfs = new mongoose.mongo.GridFSBucket(db.db)
     app.listen(port, () => {
         console.log(`Pin at Ranchi server is listening on port ${port}`)
     })
 })
+
+export { gfs }
