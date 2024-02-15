@@ -116,6 +116,78 @@ router.get('/with-image', async (req, res) => {
     }
 })
 
+
+
+
+// //test
+// router.get('/with-image', async (req, res) => {
+//     const page = parseInt(req.query.page)
+//     const limit = parseInt(req.query.limit)
+//     const startIndex = (page - 1) * limit
+//     const endIndex = startIndex + limit
+//     const searchQuery = req.query.search || '';
+//     let dataToSend = {}
+//     const query = {
+//         $and: [
+//             {
+//                 $or: [
+//                     { 'name': { $regex: searchQuery, $options: 'i' } },
+//                     { 'addressLine1': { $regex: searchQuery, $options: 'i' } },
+//                     { 'addressLine2': { $regex: searchQuery, $options: 'i' } },
+//                     { 'keyword': { $regex: searchQuery, $options: 'i' } },
+//                 ],
+//             },
+//             { status: true }
+//         ]
+//     };
+//     try {
+//         const itemData = await Item.find(searchQuery ? query : { status: true }).populate('category').populate('images').skip(startIndex).limit(limit);
+//         const count = await Item.countDocuments(searchQuery ? query : {});
+//         const totalPage = Math.ceil(count / limit)
+//         await Promise.all(
+//             itemData.map(async (item) => {
+//                 let imgArray = []
+//                 await Promise.all(
+//                     item?.images.map(async img => {
+//                         if (img.gridfsId) {
+//                             await imageRetriever(img, imgArray)
+//                         }
+//                     })
+//                 )
+//                 item.images = imgArray
+//             })
+//         )
+//         dataToSend.data = itemData
+//         if (endIndex < count) {
+//             dataToSend.next = {
+//                 page: page + 1,
+//                 limit: limit
+//             }
+//         }
+//         if (startIndex > 0) {
+//             dataToSend.prev = {
+//                 page: page - 1,
+//                 limit: limit
+//             }
+//         }
+//         dataToSend.currentPage = page
+//         dataToSend.currentLimit = limit
+//         dataToSend.totalPage = totalPage
+//         res.json(dataToSend);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({
+//             message: 'Error retrieving items'
+//         });
+//     }
+// })
+
+
+
+
+
+
+
 //data by id with its images
 router.get('/with-image/:id', async (req, res) => {
     const itemId = req.params.id
