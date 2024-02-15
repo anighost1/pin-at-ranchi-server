@@ -21,7 +21,8 @@ app.use(cors({
         'https://paradmin.onrender.com'
     ],
     credentials: true,
-    allowPrivateNetworkAccess: true
+    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    allowedHeaders: ['Content-Type'],
 }))
 app.use(cookieParser())
 const port = process.env.PORT || 6969
