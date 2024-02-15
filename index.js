@@ -13,6 +13,7 @@ import adminRouter from './routes/admin.router.js'
 
 const app = express()
 app.use(express.json())
+
 app.use(cors({
     origin: [
         'http://localhost:3000',
@@ -24,6 +25,12 @@ app.use(cors({
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type'],
 }))
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Private-Network', 'true');
+    next();
+});
+
 app.use(cookieParser())
 const port = process.env.PORT || 6969
 
