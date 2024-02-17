@@ -28,11 +28,9 @@ router.post('/', async (req, res) => {
     const { email, password } = req.body
     try {
         const admin = await Admin.login(email, password)
-        res.cookie('token', createToken(admin), { samesite: 'none', secure: true, maxAge: maxAge * 1000 })
         res.status(200).json({
             message: 'Login successful',
-            name: admin.name,
-            id: admin._id
+            token: createToken(admin)
         })
     } catch (e) {
         if (e.name === 'ValidationError') {

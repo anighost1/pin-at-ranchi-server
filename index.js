@@ -14,25 +14,8 @@ import adminRouter from './routes/admin.router.js'
 const app = express()
 app.use(express.json())
 
-app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'https://paradmin.tigga.in',
-        'https://paradmin.onrender.com',
-        'https://pinatranchi.tigga.in',
-        'https://pinatranchi.onrender.com'
+app.use(cors())
 
-    ],
-    credentials: true,
-}))
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Private-Network', 'true');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
-app.set('trust proxy', 1);
 app.use(cookieParser())
 const port = process.env.PORT || 6969
 
