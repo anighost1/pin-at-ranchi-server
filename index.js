@@ -19,11 +19,12 @@ app.use(cors({
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'https://paradmin.tigga.in',
-        'https://paradmin.onrender.com'
+        'https://paradmin.onrender.com',
+        'https://pinatranchi.tigga.in/',
+        'https://pinatranchi.onrender.com/'
+
     ],
     credentials: true,
-    methods: ['GET', 'POST', 'DELETE', 'PUT'],
-    allowedHeaders: ['Content-Type'],
 }))
 
 app.use((req, res, next) => {
